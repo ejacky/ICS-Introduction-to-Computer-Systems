@@ -29,3 +29,44 @@ char *Fgets(char *ptr, int n, FILE *stream)
 		
 	return rptr;
 }
+
+void Pause()
+{
+	(void)pause();
+	return;
+}
+
+unsigned int Sleep(unsigned int secs)
+{
+	unsigned int rc;
+	
+	if ((rc = sleep(secs)) < 0)
+		unix_error("Sleep error");
+	return rc;
+}
+
+void Kill(pid_t pid, int signum)
+{
+	int rc;
+	
+	if ((rc = kill(pid, signum)) < 0) 
+		unix_error("Kill error");
+}
+
+handler_t *Signal(int signum, handler_t *handler)
+{
+	struct sigaction action, old_action;
+	
+	action.sa_handler = handler;
+	sigemptyset(&action.sa_mask);
+	action.sa_flags = SA_RESTART;
+	
+	if (sigaction(signum, &action, &old_action) < 0)
+		unix_error("Signal error");
+	return (old_action.sa_handler); 
+}
+
+unsigned int Alarm(unsigned int seconds)
+{
+	return alarm(seconds);
+}
