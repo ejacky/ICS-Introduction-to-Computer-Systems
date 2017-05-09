@@ -1,10 +1,12 @@
 # ICS-Introduction-to-Computer-Systems
 ICS: Introduction to Computer Systems
 编译命令： 
+``` bash
 gcc -g -O -c main.c  生成 .o 文件
 gcc -g -O2 -o p main.c  生成可执行文件
 objdump -r -d main.o 反编译 .o 文件
 objdump -x -d proj 反编译 可执行文件 
+```
 本书官网： http://csapp.cs.cmu.edu/
 
 上海交通大学该课官网： http://ipads.se.sjtu.edu.cn/courses/ics/schedule.shtml
