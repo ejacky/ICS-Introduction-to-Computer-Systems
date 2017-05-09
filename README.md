@@ -1,11 +1,13 @@
 # ICS-Introduction-to-Computer-Systems
 ICS: Introduction to Computer Systems
-编译命令： 
+## 编译命令： 
 ``` bash
 gcc -g -O -c main.c  生成 .o 文件
 gcc -g -O2 -o p main.c  生成可执行文件
 objdump -r -d main.o 反编译 .o 文件
 objdump -x -d proj 反编译 可执行文件 
+```
+
 ```
 本书官网： http://csapp.cs.cmu.edu/
 
@@ -14,7 +16,7 @@ cms 课程官网： http://www.cs.cmu.edu/~./213/schedule.html
 华盛顿大学： https://courses.cs.washington.edu/courses/cse351/17sp/index.html （软硬件接口）
 
 cmu 学生笔记 ： http://wdxtub.com/2016/04/16/thin-csapp-0/
-
+```
 1987728
 用上海交大的 PPT， 用  CMU 的 实验
 
