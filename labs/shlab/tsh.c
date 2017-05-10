@@ -85,6 +85,20 @@ void app_error(char *msg);
 typedef void handler_t(int);
 handler_t *Signal(int signum, handler_t *handler);
 
+
+/*
+ * common function
+ */
+pid_t Fork(void)
+{
+	pid_t pid;
+	
+	if ((pid = fork()) < 0)
+	    unix_error("Fork error");
+	return pid;	
+}
+
+
 /*
  * main - The shell's main routine 
  */
@@ -175,7 +189,7 @@ void eval(char *cmdline)
 	if (argv[0] == NULL)
 		return;
 		
-	if (!builtin_command(argv)) {
+	if (!builtin_cmd(argv)) {
 		if ((pid = Fork()) == 0) {
 			if (execve(argv[0], argv, environ) < 0) {
 				printf("%s: Command not found. \n", argv[0]);
@@ -254,7 +268,7 @@ int parseline(const char *cmdline, char **argv)
 /* 
  * builtin_cmd - If the user has typed a built-in command then execute
  *    it immediately.  
- */
+ */ 
 int builtin_cmd(char **argv) 
 {
 	if (!strcmp(argv[0], "quit"))
