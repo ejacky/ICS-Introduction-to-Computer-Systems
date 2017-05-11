@@ -20,39 +20,15 @@ cmu 学生笔记 ： http://wdxtub.com/2016/04/16/thin-csapp-0/
 1987728
 用上海交大的 PPT， 用  CMU 的 实验
 
-Homework 1 
-Problem 1
-ch .data
-num .bss
-foo .text
-i,(.data) j      stack 
-
-Problem II
-global
-referenced global 
-referenced global
-local 
-global
-global 
-local
-
-Problem III (*有问题)
-0xd  bar  R_386_ PC32
-xx    foo1   R_386_ PC32
-xx    foo2    R_386_ PC32
-xx    foop2  R_386_ PC32
-
-xx    x          R_386_ 32
-xx    xp        R_386_ 32
 
 
-Problem 4 （*有问题）
-1 1115  +1s
-
+## Labs
 实验7    Memory Allocator 
 实验8   Cache
 实验9   Tiny Shell
 实验10 Proxy
+
+## 章节 
 
 第 二 部分 在系统上运行程序
 第 7 章 链接
@@ -116,3 +92,34 @@ Problem 4 （*有问题）
 
 
 12. 5 Web 服务器
+
+
+## Homework
+Homework 1 
+Problem 1
+ch .data
+num .bss
+foo .text
+i,(.data) j      stack 
+
+Problem II
+global
+referenced global 
+referenced global
+local 
+global
+global 
+local
+
+Problem III (*有问题)
+0xd  bar  R_386_ PC32
+xx    foo1   R_386_ PC32
+xx    foo2    R_386_ PC32
+xx    foop2  R_386_ PC32
+
+xx    x          R_386_ 32
+xx    xp        R_386_ 32
+
+
+Problem 4 （*有问题）
+1 1115  +1s 
