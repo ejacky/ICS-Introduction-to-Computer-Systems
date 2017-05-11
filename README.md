@@ -23,10 +23,10 @@ cmu 学生笔记 ： http://wdxtub.com/2016/04/16/thin-csapp-0/
 
 
 ## Labs
-实验7    Memory Allocator 
-实验8   Cache
-实验9   Tiny Shell
-实验10 Proxy
+- 实验7    Memory Allocator 
+- 实验8   Cache
+- 实验9   Tiny Shell
+- 实验10 Proxy
 
 ## 章节 
 
