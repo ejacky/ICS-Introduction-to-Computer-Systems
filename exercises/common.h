@@ -13,8 +13,10 @@
 #include <sys/wait.h>
 #include <setjmp.h>
 #include <signal.h>
+#include <netdb.h>
 
-/* м╥нд╪Ч */
+typedef struct sockaddr SA;
+
 #define MAXLINE 8192
 #define MAXBUF 8192
 #define RIO_BUFSIZE 8192
