@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <netdb.h>
 #include <sys/socket.h>
 #include <pthread.h>
 #include <sys/types.h>
@@ -13,7 +14,7 @@
 #include <sys/wait.h>
 #include <setjmp.h>
 #include <signal.h>
-#include <netdb.h>
+
 
 typedef struct sockaddr SA;
 

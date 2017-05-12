@@ -345,16 +345,17 @@ struct hostent *Gethostbyname(const char *name)
 	
 	if ((p = gethostbyname(name)) == NULL)
 		dns_error("Gethostbyname error");
+	
 	return p;
 }
 
 struct hostent *Gethostbyaddr(const char *addr, int len, int type)
 {
-	struct hostent *p;
-	
-	if ((p = gethostbyaddr(addr, len, type)) == NULL)
-		dns_error("Gethostbyaddr error");
-	return p;
+    struct hostent *p;
+
+    if ((p = gethostbyaddr(addr, len, type)) == NULL)
+        dns_error("Gethostbyaddr error");
+    return p;
 }
 
 

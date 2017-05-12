@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 		clientlen = sizeof(clientaddr);
 		connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
 		
-		hp = Gethostbyaddr((const char *)&clientaddr.sin_addr.s_addr, sizeof(clientaddr.sin_addr.s_addr), AF_INET);
+		hp = gethostbyaddr((const char *)&clientaddr.sin_addr.s_addr, sizeof(clientaddr.sin_addr.s_addr), AF_INET);
 		haddrp = inet_ntoa(clientaddr.sin_addr);
 		printf("server connected to %s (%s)\n", hp->h_name, haddrp);
 		
