@@ -7,6 +7,12 @@ void unix_error(char *msg)
 	exit(0);
 }
 
+void posix_error(int code, char *msg)
+{
+	fprintf(stderr, "%s: %s\n", msg, strerror(code));
+	exit(0);
+}
+
 void app_error(char *msg)
 {
 	fprintf(stderr, "%s\n", msg);
@@ -94,7 +100,32 @@ unsigned int Alarm(unsigned int seconds)
 	return alarm(seconds);
 }
 
-// memory
+// thread
+void Pthread_create(pthread_t *tidp, pthread_attr_t *attrp, void *(*routine)(void *), void *argp)
+{
+	int rc;
+	
+	if ((rc = pthread_create(tidp, attrp, routine, argp)) != 0)
+		posix_error(rc, "Pthread_create error");
+}
+
+void Pthread_join(pthread_t tid, void **thread_return)
+{
+	int rc;
+	
+	if ((rc = pthread_join(tid, thread_return)) != 0)
+	    posix_error(rc, "Pthread_join error");
+}
+
+void Pthread_detach(pthread_t tid) 
+{
+	int rc;
+	
+	if ((rc = pthread_detach(tid)) != 0)
+	    posix_error(rc, "Pthread_detach error");
+}
+
+// memory mapping
 void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 	void *ptr;
@@ -108,6 +139,21 @@ void Munmap(void *start, size_t length)
 {
 	if (munmap(start, length) < 0)
 		unix_error("munmap error");
+}
+
+// dynamic storage allocation
+void *Malloc (size_t size)
+{
+	void *p;
+	
+	if ((p = malloc(size)) == NULL)
+		unix_error("Malloc error");
+	return p;
+}
+
+void Free(void *ptr)
+{
+	free(ptr);
 }
 
 
