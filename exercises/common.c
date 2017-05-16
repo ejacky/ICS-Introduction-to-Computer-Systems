@@ -125,6 +125,26 @@ void Pthread_detach(pthread_t tid)
 	    posix_error(rc, "Pthread_detach error");
 }
 
+// semaphores
+void Sem_init(sem_t *sem, int pshared, unsigned int value)
+{
+	if (sem_init(sem, pshared, value) < 0)
+	    unix_error("Sem_init error");
+}
+
+void P(sem_t *sem)
+{
+	if (sem_wait(sem) < 0)
+		unix_error("P error");
+}
+
+void V(sem_t *sem)
+{
+	if (sem_post(sem) < 0)
+		unix_error("V error");
+}
+
+
 // memory mapping
 void *Mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
@@ -148,6 +168,15 @@ void *Malloc (size_t size)
 	
 	if ((p = malloc(size)) == NULL)
 		unix_error("Malloc error");
+	return p;
+}
+
+void *Calloc(size_t nmemb, size_t size)
+{
+	void *p;
+	
+	if ((p = calloc(nmemb, size)) == NULL)
+		unix_error("Calloc error");
 	return p;
 }
 

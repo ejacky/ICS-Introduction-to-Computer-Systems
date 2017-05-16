@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <netinet/in.h>
 #include <unistd.h>
-
+#include <semaphore.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
