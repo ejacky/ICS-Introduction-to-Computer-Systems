@@ -125,6 +125,11 @@ void Pthread_detach(pthread_t tid)
 	    posix_error(rc, "Pthread_detach error");
 }
 
+void Pthread_once(pthread_once_t *once_control, void (*init_function)()) 
+{
+	pthread_once(once_control, init_function);
+}
+
 // semaphores
 void Sem_init(sem_t *sem, int pshared, unsigned int value)
 {

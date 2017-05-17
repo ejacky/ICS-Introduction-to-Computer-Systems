@@ -307,7 +307,14 @@ void waitfg(pid_t pid)
  */
 void sigchld_handler(int sig) 
 {
-    return;
+	pid_t pid;
+	
+	while ((pid = waitpid(-1, NULL, 0)) > 0)
+		printf("hanlder reaped child %d\n", (int)pid);
+	if (errno != ECHILD)
+		unix_error("waipid errorss");
+	Sleep(2);
+	return;
 }
 
 /* 
@@ -317,6 +324,8 @@ void sigchld_handler(int sig)
  */
 void sigint_handler(int sig) 
 {
+	printf("Caught SIGINT\n");
+	exit(0);
     return;
 }
 
