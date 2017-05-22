@@ -26,7 +26,13 @@ int main(int argc, char **argv)
 void *thread(void *vargp)
 {
 	int connfd = *((int *)vargp);
-	Pthread_detach(pthread_self());
+	pthread_id_np_t   tid;
+	pthread_t         self;	
+    self = pthread_self();
+	pthread_getunique_np(&self, &tid);
+	
+	Pthread_detach(self);
+	fprintf(stderr, "thread_id: %ld \n", tid);
 	Free(vargp);
 	echo(connfd);
 	Close(connfd);
