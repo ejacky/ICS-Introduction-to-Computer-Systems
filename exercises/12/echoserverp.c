@@ -11,7 +11,7 @@ void sigchld_handler(int sig)
 int main(int argc, char **argv)
 {
 	int listenfd, connfd, port;
-	socket_t clientlen = sizeof(struct sockadd_in);
+	socklen_t clientlen = sizeof(struct sockaddr_in);
 	struct sockaddr_in clientaddr;
 	
 	if (argc != 2) {
@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 		connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
 		if (Fork() == 0) {
 			Close(listenfd);
-			echo(confd);
+			echo(connfd);
 			Close(connfd);
 			exit(0);
 		}

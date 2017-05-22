@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <netdb.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <pthread.h>
 #include <sys/types.h>
