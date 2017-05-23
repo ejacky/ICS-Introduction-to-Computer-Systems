@@ -31,13 +31,14 @@ int main(int argc, char **argv)
 	
 	listenfd = Open_listenfd(port);
 	init_pool(listenfd, &pool);
-	
+	fprintf(stderr, "before");	
 	while (1) {
 		pool.ready_set = pool.ready_set;
 		pool.nready = Select(pool.maxfd+1, &pool.ready_set, NULL, NULL, NULL);
-		
+		fprintf(stderr, "in while");			
 		if (FD_ISSET(listenfd, &pool.ready_set)) {
 			connfd = Accept(listenfd, (SA *) &clientaddr, &clientlen);
+			fprintf(stderr, "connfd id: %d\n", connfd);
 			add_client(connfd, &pool);
 		}
 		
