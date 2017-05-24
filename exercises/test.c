@@ -1,15 +1,14 @@
 #include <stdio.h>
-#include <sys/stat.h>
-#include <netinet/in.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
-	int port;
-	//char method[1024] = "GET";
-	port = atoi(argv[1]);
-	printf("port is %s", argv[1]);
-	printf("%d \n", htons(16));
-	//printf("ÄãºÃ"); 
-	//int rc;
-	//rc = open("home.html", O_RDONLY, 0);
+
+	void *p;
+	int cnt = 0;
+	while ((p = malloc(100*1024*1024))) {
+		cnt++;
+	} 
+	printf("%d 100 M ¿Õ¼ä", cnt);
+	return 0;
 }
