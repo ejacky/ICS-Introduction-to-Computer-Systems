@@ -79,6 +79,7 @@ function clear_dirs {
 #     argument is actually being used. Times out after 5 seconds.
 #
 function wait_for_port_use() {
+
     timeout_count="0"
     portsinuse=`netstat --numeric-ports --numeric-hosts -a --protocol=tcpip \
         | grep tcp | cut -c21- | cut -d':' -f2 | cut -d' ' -f1 \
@@ -196,7 +197,7 @@ fi
 
 if [ ! -d ${NOPROXY_DIR} ]
 then
-    mkdir ${NOPROXY_DIR}
+    mkdir ${    }
 fi
 
 # Add a handler to generate a meaningful timeout message
