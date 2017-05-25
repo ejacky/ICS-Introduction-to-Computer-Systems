@@ -18,38 +18,48 @@ typedef struct {
     char serv[SERVLEN];
 } client_info;
 
-int parse_uri(char *uri, char *port, char *cgiargs) 
-{
-    char *ptr;
+// int parse_uri(char *uri, char *port, char *cgiargs) 
+// {
+//     char *ptr;
 
-    if (!strstr(uri, "cgi-bin")) {  /* Static content */ //line:netp:parseuri:isstatic
-	strcpy(cgiargs, "");                             //line:netp:parseuri:clearcgi
-	strcpy(filename, ".");                           //line:netp:parseuri:beginconvert1
-	strcat(filename, uri);                           //line:netp:parseuri:endconvert1
-	if (uri[strlen(uri)-1] == '/')                   //line:netp:parseuri:slashcheck
-	    strcat(filename, "home.html");               //line:netp:parseuri:appenddefault
-	return 1;
-    }
-    else {  /* Dynamic content */                        //line:netp:parseuri:isdynamic
-	ptr = index(uri, '?');                           //line:netp:parseuri:beginextract
-	if (ptr) {
-	    strcpy(cgiargs, ptr+1);
-	    *ptr = '\0';
-	}
-	else 
-	    strcpy(cgiargs, "");                         //line:netp:parseuri:endextract
-	strcpy(filename, ".");                           //line:netp:parseuri:beginconvert2
-	strcat(filename, uri);                           //line:netp:parseuri:endconvert2
-	return 0;
-    }
-}
+//     if (!strstr(uri, "cgi-bin")) {  /* Static content */ //line:netp:parseuri:isstatic
+// 	strcpy(cgiargs, "");                             //line:netp:parseuri:clearcgi
+// 	strcpy(filename, ".");                           //line:netp:parseuri:beginconvert1
+// 	strcat(filename, uri);                           //line:netp:parseuri:endconvert1
+// 	if (uri[strlen(uri)-1] == '/')                   //line:netp:parseuri:slashcheck
+// 	    strcat(filename, "home.html");               //line:netp:parseuri:appenddefault
+// 	return 1;
+//     }
+//     else {  /* Dynamic content */                        //line:netp:parseuri:isdynamic
+// 	ptr = index(uri, '?');                           //line:netp:parseuri:beginextract
+// 	if (ptr) {
+// 	    strcpy(cgiargs, ptr+1);
+// 	    *ptr = '\0';
+// 	}
+// 	else 
+// 	    strcpy(cgiargs, "");                         //line:netp:parseuri:endextract
+// 	strcpy(filename, ".");                           //line:netp:parseuri:beginconvert2
+// 	strcat(filename, uri);                           //line:netp:parseuri:endconvert2
+// 	return 0;
+//     }
+// }
 
 void *handle(void *arg)
 {
-    char buf[MAXLINE];
-    char filename[MAXLINE];
+    int is_static;
+    int clientfd;
+    char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE], buf2[MAXLINE];
+    char filename[MAXLINE], cgiargs[MAXLINE];
     rio_t rio;
+
+
     client_info *client = arg;
+
+    char *hostname = "localhost";
+    char *port = "5002";
+    char *method2 = "GET";
+    char *uri2 = "/godzilla.jpg";
+    char *version2 = "HTTP/1.0";
     
     Pthread_detach(pthread_self());
 
@@ -65,9 +75,16 @@ void *handle(void *arg)
         return;
     printf("%s", buf);
     sscanf(buf, "%s %s %s", method, uri, version); 
-    is_static = parse_uri(uri, filename, cgiargs); 
+    //is_static = parse_uri(uri, filename, cgiargs); 
 
-    clientfd = Open_client(client->host, client->serv);
+    clientfd = Open_clientfd(hostname, port);
+
+    sprintf(buf2, "%s %s %s\r\n", method2, uri2, version2);
+    Rio_writen(clientfd, buf2, strlen(buf2));
+
+    Rio_readlineb(&rio, buf2, MAXLINE);
+
+    Rio_writen(client->connfd, buf2, strlen(buf2));
 
 }
 
