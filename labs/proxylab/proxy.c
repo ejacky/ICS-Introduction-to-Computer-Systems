@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "csapp.h"
+#include <netdb.h>
 
 /* Recommended max cache and object sizes */
 #define MAX_CACHE_SIZE 1049000
@@ -78,13 +79,18 @@ void *handle(void *arg)
     //is_static = parse_uri(uri, filename, cgiargs); 
 
     clientfd = Open_clientfd(hostname, port);
-
+    Rio_readinitb(&rio, clientfd);
     sprintf(buf2, "%s %s %s\r\n", method2, uri2, version2);
     Rio_writen(clientfd, buf2, strlen(buf2));
 
-    Rio_readlineb(&rio, buf2, MAXLINE);
+    while (fgets(buf2, MAXLINE, clientfd) != NULL) {
 
-    Rio_writen(client->connfd, buf2, strlen(buf2));
+        Rio_readlineb(&rio, buf2, MAXLINE);
+        printf("%s", buf);
+        Rio_writen(client->connfd, buf2, strlen(buf2));
+
+    }
+
 
 }
 
