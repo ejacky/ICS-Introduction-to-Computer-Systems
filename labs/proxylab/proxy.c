@@ -11,6 +11,8 @@
 /* You won't lose style points for including this long line in your code */
 static const char *user_agent_hdr = "User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n";
 
+static sem_t mutex;
+
 typedef struct {
     struct sockaddr_in addr;
     socklen_t addrlen;
@@ -18,6 +20,11 @@ typedef struct {
     char host[HOSTLEN];
     char serv[SERVLEN];
 } client_info;
+
+static void init_mutex(void)
+{
+    Sem_init(&mutex, 0, 1);
+}
 
 int open_clientfd_w(char *hostname, int port)
 {
@@ -99,32 +106,6 @@ ssize_t Rio_readlineb_w(rio_t *rp, void *usrbuf, size_t maxlen)
     }
     return rc;
 } 
-
-// int parse_uri(char *uri, char *port, char *cgiargs) 
-// {
-//     char *ptr;
-
-//     if (!strstr(uri, "cgi-bin")) {  /* Static content */ //line:netp:parseuri:isstatic
-// 	strcpy(cgiargs, "");                             //line:netp:parseuri:clearcgi
-// 	strcpy(filename, ".");                           //line:netp:parseuri:beginconvert1
-// 	strcat(filename, uri);                           //line:netp:parseuri:endconvert1
-// 	if (uri[strlen(uri)-1] == '/')                   //line:netp:parseuri:slashcheck
-// 	    strcat(filename, "home.html");               //line:netp:parseuri:appenddefault
-// 	return 1;
-//     }
-//     else {  /* Dynamic content */                        //line:netp:parseuri:isdynamic
-// 	ptr = index(uri, '?');                           //line:netp:parseuri:beginextract
-// 	if (ptr) {
-// 	    strcpy(cgiargs, ptr+1);
-// 	    *ptr = '\0';
-// 	}
-// 	else 
-// 	    strcpy(cgiargs, "");                         //line:netp:parseuri:endextract
-// 	strcpy(filename, ".");                           //line:netp:parseuri:beginconvert2
-// 	strcat(filename, uri);                           //line:netp:parseuri:endconvert2
-// 	return 0;
-//     }
-// }
 
 /*
  * parse_uri - URI parser
@@ -244,10 +225,14 @@ void *handle(void *arg)
     FILE *fin, *fout;
     sprintf(cache_path, "%s%s", cache_dir, filename);
     printf("cache path: %s\r\n", cache_path);
+    static pthread_once_t once = PTHREAD_ONCE_INIT;
+
+    Pthread_once(&once, init_mutex);
     if( access( cache_path, F_OK ) != -1 ) {
     // file exists
         int c;
         printf("just haha: \r\n");
+        P(&mutex);
         fin = fopen(cache_path, "r");
         printf("just new  haha: \r\n");
 
@@ -257,12 +242,13 @@ void *handle(void *arg)
             { 
                 break ;
             }
-            printf("what the fuck: \r\n");
+            printf("just haha: \r\n");
 
-            fprintf(client->connfd, c);
+            Rio_writen(client->connfd, c, 1);
         }
         printf("you get cache\r\n");
         fclose(fin);
+        V(&mutex);
     } else {
         // file doesn't exist
         clientfd = Open_clientfd_w(hostname, port);
@@ -278,6 +264,7 @@ void *handle(void *arg)
         Rio_readinitb_w(&rio1, clientfd);
             
         int flag = 0;
+        P(&mutex);
         fout = fopen(cache_path, "w+");
         while ((n = Rio_readlineb_w(&rio1, buf2, MAXLINE)) != 0) {
             if (Rio_writen_w(client->connfd, buf2, n) != n ) // 没有这个， 二进制文件无法获取
@@ -290,43 +277,13 @@ void *handle(void *arg)
             }
         }
         fclose(fout);
+        V(&mutex);
 
         Rio_writen(client->connfd, "\r\n", 2);
 
         printf("haha \r\n");
         Close(clientfd);
     }
-
-        // clientfd = Open_clientfd_w(hostname, port);
-        // //Rio_readinitb_w(&rio, client->connfd);
-        // sprintf(buf, "%s /%s %s\r\n", method, filename, version);
-        // Rio_writen(clientfd, buf, strlen(buf));
-
-        // while (strcmp(buf, "\r\n")) {
-        //     Rio_readlineb_w(&rio, buf, MAXLINE);
-        //     printf("%s", buf);
-        //     Rio_writen(clientfd, buf, strlen(buf));
-        // }
-        // Rio_readinitb_w(&rio1, clientfd);
-            
-        // int flag = 0;
-        // fout = fopen(filename, "w+");
-        // while ((n = Rio_readlineb_w(&rio1, buf2, MAXLINE)) != 0) {
-        //     if (Rio_writen_w(client->connfd, buf2, n) != n ) // 没有这个， 二进制文件无法获取
-        //         break;
-        //     // if (strcmp(buf2, "\r\n") == 0) {
-        //     //     flag = 1;
-        //     // }
-        //     // if (flag) {
-        //     //     fprintf(fout, buf2);
-        //     // }
-        // }
-        // //fclose(fout);
-
-        // Rio_writen(client->connfd, "\r\n", 2);
-
-        // printf("haha \r\n");
-        // Close(clientfd);
     
     //char logstring[MAXLINE];
     //format_log_entry(char *logstring, struct sockaddr_in *sockaddr, char *uri, int size);
