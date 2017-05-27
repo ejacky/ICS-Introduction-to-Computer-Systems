@@ -46,9 +46,9 @@ int Open_clientfd_w(char *hostname, int port)
 	
 	if ((rc = open_clientfd_w(hostname, port)) < 0) {
 		if (rc == -1)
-			unix_error("Open_clientfd Unix error");
+			printf("Open_clientfd Unix error\r\n");
 		else 
-			dns_error("Open_clienfd DNS error");
+			printf("Open_clienfd DNS error\r\n");
 	}
 	return rc;
 } 
@@ -64,10 +64,13 @@ ssize_t Rio_readn_w(int fd, void *ptr, size_t nbytes)
     return n;
 }
 
-void Rio_writen_w(int fd, void *usrbuf, size_t n) 
+ssize_t Rio_writen_w(int fd, void *usrbuf, size_t n) 
 {
-    if (rio_writen(fd, usrbuf, n) != n)
-	printf("Rio_writen error\n");
+    if (rio_writen(fd, usrbuf, n) != n) {
+	    printf("Rio_writen error\n");
+        return 0;
+    }
+    return n;
 }
 
 void Rio_readinitb_w(rio_t *rp, int fd)
@@ -209,23 +212,18 @@ void format_log_entry(char *logstring, struct sockaddr_in *sockaddr, char *uri, 
 
 void *handle(void *arg)
 {
-    int is_static;
     int clientfd;
     char buf[MAXLINE], method[MAXLINE], uri[MAXLINE], version[MAXLINE], buf2[MAXLINE];
+    char *cache_dir = ".cache/"; 
+    char cache_path[MAXLINE];
     char hostname[MAXLINE];
-    int  port;
-    char filename[MAXLINE], cgiargs[MAXLINE];
+    int  port, n;
+    char filename[MAXLINE];
     rio_t rio, rio1;
 
 
     client_info *client = arg;
 
-     //char *hostname = "localhost";
-     //char *port = "5002";
-    // char *method2 = "GET";
-    // char *uri2 = "/godzilla.jpg";
-    // char *version2 = "HTTP/1.0";
-    
     Pthread_detach(pthread_self());
 
     Getnameinfo((SA *) &client->addr, client->addrlen,
@@ -237,57 +235,103 @@ void *handle(void *arg)
     
     Rio_readinitb_w(&rio, client->connfd);
     if (!Rio_readlineb_w(&rio, buf, MAXLINE))
-        return;
+        printf("cannot read\r\n");
     printf("%s", buf);
     sscanf(buf, "%s %s %s", method, uri, version); 
     parse_uri(uri, hostname, filename, &port); 
     printf("hostname: %s filename: %s port: %d\r\n", hostname, filename, port);
     
-    clientfd = Open_clientfd_w(hostname, port);
+    FILE *fin, *fout;
+    sprintf(cache_path, "%s%s", cache_dir, filename);
+    printf("cache path: %s\r\n", cache_path);
+    if( access( cache_path, F_OK ) != -1 ) {
+    // file exists
+        int c;
+        printf("just haha: \r\n");
+        fin = fopen(cache_path, "r");
+        printf("just new  haha: \r\n");
 
-    //Rio_readinitb_w(&rio, client->connfd);
-    sprintf(buf, "%s /%s %s\r\n", method, filename, version);
-    Rio_writen(clientfd, buf, strlen(buf));
+        while(1) {
+            c = fgetc(fin);
+            if( feof(fin) )
+            { 
+                break ;
+            }
+            printf("what the fuck: \r\n");
 
-    while (strcmp(buf, "\r\n")) {
-        Rio_readlineb_w(&rio, buf, MAXLINE);
-        printf("%s", buf);
+            fprintf(client->connfd, c);
+        }
+        printf("you get cache\r\n");
+        fclose(fin);
+    } else {
+        // file doesn't exist
+        clientfd = Open_clientfd_w(hostname, port);
+        //Rio_readinitb_w(&rio, client->connfd);
+        sprintf(buf, "%s /%s %s\r\n", method, filename, version);
         Rio_writen(clientfd, buf, strlen(buf));
+
+        while (strcmp(buf, "\r\n")) {
+            Rio_readlineb_w(&rio, buf, MAXLINE);
+            printf("%s", buf);
+            Rio_writen(clientfd, buf, strlen(buf));
+        }
+        Rio_readinitb_w(&rio1, clientfd);
+            
+        int flag = 0;
+        fout = fopen(cache_path, "w+");
+        while ((n = Rio_readlineb_w(&rio1, buf2, MAXLINE)) != 0) {
+            if (Rio_writen_w(client->connfd, buf2, n) != n ) // 没有这个， 二进制文件无法获取
+                break;
+            if (strcmp(buf2, "\r\n") == 0) {
+                flag = 1;
+            }
+            if (flag) {
+                fprintf(fout, buf2);
+            }
+        }
+        fclose(fout);
+
+        Rio_writen(client->connfd, "\r\n", 2);
+
+        printf("haha \r\n");
+        Close(clientfd);
     }
 
-    Rio_readinitb_w(&rio1, clientfd);
-    //printf("before left length : %d", ;
+        // clientfd = Open_clientfd_w(hostname, port);
+        // //Rio_readinitb_w(&rio, client->connfd);
+        // sprintf(buf, "%s /%s %s\r\n", method, filename, version);
+        // Rio_writen(clientfd, buf, strlen(buf));
 
-    while (Rio_readlineb_w(&rio1, buf2, MAXLINE)) {
-        printf("%s", buf2);
-        printf("still %d ", rio1.rio_cnt);
-        Rio_writen(client->connfd, buf2, strlen(buf2));
-    }
-    //printf("left length : %d", rio1.rio_cnt);
-    // Rio_readlineb_w(&rio1, buf2, MAXLINE);
-    // printf("still %d ", rio1.rio_cnt);
-    // Rio_writen(client->connfd, buf2, strlen(buf2));
-    Rio_writen(client->connfd, "\r\n", 2);
+        // while (strcmp(buf, "\r\n")) {
+        //     Rio_readlineb_w(&rio, buf, MAXLINE);
+        //     printf("%s", buf);
+        //     Rio_writen(clientfd, buf, strlen(buf));
+        // }
+        // Rio_readinitb_w(&rio1, clientfd);
+            
+        // int flag = 0;
+        // fout = fopen(filename, "w+");
+        // while ((n = Rio_readlineb_w(&rio1, buf2, MAXLINE)) != 0) {
+        //     if (Rio_writen_w(client->connfd, buf2, n) != n ) // 没有这个， 二进制文件无法获取
+        //         break;
+        //     // if (strcmp(buf2, "\r\n") == 0) {
+        //     //     flag = 1;
+        //     // }
+        //     // if (flag) {
+        //     //     fprintf(fout, buf2);
+        //     // }
+        // }
+        // //fclose(fout);
 
-    printf("haha \r\n");
-    //Close(clientfd);
-    //Close(client->connfd);
+        // Rio_writen(client->connfd, "\r\n", 2);
 
-    // clientfd = Open_clientfd(hostname, port);
-    // Rio_readinitb(&rio, clientfd);
-    // sprintf(buf2, "%s %s %s\r\n", method2, uri2, version2);
-    // sprintf(buf2, "%sHost: localhost\r\n", buf2);
-    // sprintf(buf2, "%sUser-Agent: User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:10.0.3) Gecko/20120305 Firefox/10.0.3\r\n", buf2);
-    // sprintf(buf2, "%sConnection: close\r\n", buf2);
-    // sprintf(buf2, "%sProxy-Connection: close\r\n\r\n", buf2);
-    // Rio_writen(clientfd, buf2, strlen(buf2));
-
-    // while (strcmp(buf2, "\r\n")) {
-    //     Rio_readlineb(&rio, buf2, MAXLINE);
-    //     printf("%s", buf2);
-    //     Rio_writen(client->connfd, buf2, strlen(buf2));
-    // }
-    //
+        // printf("haha \r\n");
+        // Close(clientfd);
+    
+    //char logstring[MAXLINE];
+    //format_log_entry(char *logstring, struct sockaddr_in *sockaddr, char *uri, int size);
+    Close(client->connfd);
+    return NULL;
 }
 
 int main(int argc, char **argv)
