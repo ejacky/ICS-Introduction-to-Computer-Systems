@@ -17,6 +17,7 @@ cgi:
 	(cd cgi-bin; make)
 
 clean:
+	find . -type f | xargs touch
 	rm -f *.o tiny *~
 	(cd cgi-bin; make clean)
 
