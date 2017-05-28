@@ -191,6 +191,44 @@ void format_log_entry(char *logstring, struct sockaddr_in *sockaddr, char *uri, 
     sprintf(logstring, "%s: %d.%d.%d.%d %s %d", time_str, a, b, c, d, uri, size);
 }
 
+void serve_static(int fd, char *filename, int filesize) 
+{
+    int srcfd;
+    char *srcp, filetype[MAXLINE], buf[MAXBUF];
+ 
+    /* Send response headers to client */
+    get_filetype(filename, filetype);       //line:netp:servestatic:getfiletype
+    sprintf(buf, "HTTP/1.0 200 OK\r\n");    //line:netp:servestatic:beginserve
+    sprintf(buf, "%sServer: Tiny Web Server\r\n", buf);
+    sprintf(buf, "%sConnection: close\r\n", buf);
+    sprintf(buf, "%sContent-length: %d\r\n", buf, filesize);
+    sprintf(buf, "%sContent-type: %s\r\n\r\n", buf, filetype);
+    Rio_writen(fd, buf, strlen(buf));       //line:netp:servestatic:endserve
+    printf("Response headers:\n");
+    printf("%s", buf);
+
+    /* Send response body to client */
+    srcfd = Open(filename, O_RDONLY, 0);    //line:netp:servestatic:open
+    srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);//line:netp:servestatic:mmap
+    Close(srcfd);                           //line:netp:servestatic:close
+    Rio_writen(fd, srcp, filesize);         //line:netp:servestatic:write
+    Munmap(srcp, filesize);                 //line:netp:servestatic:munmap
+}
+
+void get_filetype(char *filename, char *filetype) 
+{
+    if (strstr(filename, ".html"))
+	strcpy(filetype, "text/html");
+    else if (strstr(filename, ".gif"))
+	strcpy(filetype, "image/gif");
+    else if (strstr(filename, ".png"))
+	strcpy(filetype, "image/png");
+    else if (strstr(filename, ".jpg"))
+	strcpy(filetype, "image/jpeg");
+    else
+	strcpy(filetype, "text/plain");
+} 
+
 void *handle(void *arg)
 {
     int clientfd;
@@ -199,6 +237,7 @@ void *handle(void *arg)
     char cache_path[MAXLINE];
     char hostname[MAXLINE];
     int  port, n;
+    struct stat sbuf;
     char filename[MAXLINE];
     rio_t rio, rio1;
 
@@ -228,27 +267,12 @@ void *handle(void *arg)
     static pthread_once_t once = PTHREAD_ONCE_INIT;
 
     Pthread_once(&once, init_mutex);
-    if( access( cache_path, F_OK ) != -1 ) {
+
+
+
+    if( stat( cache_path, &sbuf ) >= 0 ) {
     // file exists
-        int c;
-        printf("just haha: \r\n");
-        P(&mutex);
-        fin = fopen(cache_path, "r");
-        printf("just new  haha: \r\n");
-
-        while(1) {
-            c = fgetc(fin);
-            if( feof(fin) )
-            { 
-                break ;
-            }
-            printf("just haha: \r\n");
-
-            Rio_writen(client->connfd, c, 1);
-        }
-        printf("you get cache\r\n");
-        fclose(fin);
-        V(&mutex);
+        serve_static(client->connfd, cache_path, sbuf.st_size);  
     } else {
         // file doesn't exist
         clientfd = Open_clientfd_w(hostname, port);
@@ -265,22 +289,36 @@ void *handle(void *arg)
             
         int flag = 0;
         P(&mutex);
-        fout = fopen(cache_path, "w+");
+        int fout;
+        fout =  Fopen(cache_path, "w+");
         while ((n = Rio_readlineb_w(&rio1, buf2, MAXLINE)) != 0) {
             if (Rio_writen_w(client->connfd, buf2, n) != n ) // 没有这个， 二进制文件无法获取
                 break;
+            
+            // void *p = buf2;
+            // while (n > 0) {
+            //     int bytes_writen = write(fout, p, n);
+            //     if (bytes_writen <= 0) 
+            //         printf("write file error\r\n");
+            //     n -= bytes_writen;
+            //     p += bytes_writen;
+            // }
+            printf("the buf2 length:%d\r\n", n);
+
             if (strcmp(buf2, "\r\n") == 0) {
                 flag = 1;
             }
             if (flag) {
+                printf("the flag length:%d\r\n", n);
+                //Rio_writen_w(fout, buf2, n);
                 fprintf(fout, buf2);
             }
         }
         fclose(fout);
+        //Rio_writen(fout, "\r\n", 2);
+        Close(fout);
         V(&mutex);
-
         Rio_writen(client->connfd, "\r\n", 2);
-
         printf("haha \r\n");
         Close(clientfd);
     }
