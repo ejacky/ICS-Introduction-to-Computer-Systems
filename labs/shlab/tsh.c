@@ -196,14 +196,11 @@ void eval(char *cmdline)
 				exit(0);
 			}
 		}
-		
+
 		if (!bg) {
-			int status;
-			if (waitpid(pid, &status, 0) < 0) 
-				unix_error("waitfg: waitpid error");
-				exit(0);
+			addjob(jobs, pid, FG, cmdline);
 		} else
-			printf("%d %s", pid, cmdline);
+			addjob(jobs, pid, BG, cmdline);
 	}
 	return;
 }
@@ -309,11 +306,14 @@ void sigchld_handler(int sig)
 {
 	pid_t pid;
 	
-	while ((pid = waitpid(-1, NULL, 0)) > 0)
+	while ((pid = waitpid(-1, NULL, 0)) > 0) {
 		printf("hanlder reaped child %d\n", (int)pid);
+		deletejob(jobs, pid);
+	}
+		
 	if (errno != ECHILD)
 		unix_error("waipid errorss");
-	Sleep(2);
+	sleep(2);
 	return;
 }
 
