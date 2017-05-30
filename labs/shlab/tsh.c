@@ -336,6 +336,8 @@ void sigint_handler(int sig)
  */
 void sigtstp_handler(int sig) 
 {
+	int id = fgpid(jobs);
+	printf("current process pid : %d \n", id);
     return;
 }
 
