@@ -193,7 +193,7 @@ void eval(char *cmdline)
 		if ((pid = Fork()) == 0) {
 			if (execve(argv[0], argv, environ) < 0) {
 				printf("%s: Command not found. \n", argv[0]);
-				exit(0);
+				return;
 			}
 		}
 
@@ -269,9 +269,32 @@ int parseline(const char *cmdline, char **argv)
 int builtin_cmd(char **argv) 
 {
 	if (!strcmp(argv[0], "quit"))
-		exit(0);
+		exit(1);
 	if (!strcmp(argv[0], "&"))
 		return 1;
+	if (!strcmp(argv[0], "jobs")) {
+		listjobs(jobs);
+		return 1;
+	}
+	if (!strcmp(argv[0], "fg")) {
+		
+		if (argv[1] != NULL) {
+			printf("before");
+			struct job_t *fgjob = getjobpid(jobs, argv[1]);
+			printf("just soso");
+	    	printf("[%d] (%d) ", (*fgjob).jid, (*fgjob).pid);
+		} else {
+			printf("no such job");
+		}
+		printf("length: %d\n", strlen(argv));
+		printf("argv[1]: %s\n", argv[1]);
+		printf("argv[2]: %s\n", argv[2]);
+		return 1;
+	}
+	if (!strcmp(argv[0], "bg")) {
+		return 1;
+	}
+		
     return 0;     /* not a builtin command */
 }
 
@@ -305,9 +328,8 @@ void waitfg(pid_t pid)
 void sigchld_handler(int sig) 
 {
 	pid_t pid;
-	
+	printf("just test");
 	while ((pid = waitpid(-1, NULL, 0)) > 0) {
-		printf("hanlder reaped child %d\n", (int)pid);
 		deletejob(jobs, pid);
 	}
 		
@@ -433,6 +455,7 @@ pid_t fgpid(struct job_t *jobs) {
 /* getjobpid  - Find a job (by PID) on the job list */
 struct job_t *getjobpid(struct job_t *jobs, pid_t pid) {
     int i;
+	printf("inner");
 
     if (pid < 1)
 	return NULL;
@@ -473,7 +496,7 @@ int pid2jid(pid_t pid)
 void listjobs(struct job_t *jobs) 
 {
     int i;
-    
+
     for (i = 0; i < MAXJOBS; i++) {
 	if (jobs[i].pid != 0) {
 	    printf("[%d] (%d) ", jobs[i].jid, jobs[i].pid);

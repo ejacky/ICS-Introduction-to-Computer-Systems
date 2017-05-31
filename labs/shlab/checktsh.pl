@@ -1,5 +1,5 @@
-#!/usr/bin/env perl
-#!/usr/local/bin/env perl
+#!/usr/bin/perl
+#!/usr/local/bin/perl
 use Getopt::Std;
 use FileHandle;
 use IPC::Open2;
