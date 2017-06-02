@@ -277,21 +277,13 @@ int builtin_cmd(char **argv)
 		return 1;
 	}
 	if (!strcmp(argv[0], "fg")) {
-		
-		if (argv[1] != NULL) {
-			printf("before");
-			struct job_t *fgjob = getjobpid(jobs, argv[1]);
-			printf("just soso");
-	    	printf("[%d] (%d) ", (*fgjob).jid, (*fgjob).pid);
-		} else {
-			printf("no such job");
-		}
-		printf("length: %d\n", strlen(argv));
-		printf("argv[1]: %s\n", argv[1]);
-		printf("argv[2]: %s\n", argv[2]);
+		do_bgfg(argv);
+
 		return 1;
 	}
 	if (!strcmp(argv[0], "bg")) {
+		do_bgfg(argv);
+		
 		return 1;
 	}
 		
@@ -303,6 +295,20 @@ int builtin_cmd(char **argv)
  */
 void do_bgfg(char **argv) 
 {
+	struct job_t *job;
+	if (argv[1] != NULL) {
+		printf("before\n");
+		job = getjobpid(jobs, argv[1]);
+		printf("just soso\n");
+		printf("jid:%d\n", job->jid);
+		//printf("[%d] (%d) ", (*fgjob).jid, (*fgjob).pid);
+	} else {
+		printf("no such job\n");
+	}
+	// printf("length: %d\n", strlen(argv));
+	// printf("argv[1]: %s\n", argv[1]);
+	// printf("argv[2]: %s\n", argv[2]);
+
     return;
 }
 
