@@ -120,10 +120,39 @@ void *mm_malloc(size_t size)
 
 static void *find_fit(size_t asize)
 {
+	char *bp;
 	
+	if (size == 0)
+		return NULL;
+		
+//	if ((long)(bp = mem_sbrk(asize)) == -1) {
+//		return NULL;
+//	}
+	bp = heap_listp;
+	
+	while (((size_t size = GET_SIZE(HDRP(NEXT_BLKP(bp)))) < asize) || GET_ALLOC(HDRP(bp))) {
+		if (size == NULL) {
+			return NULL;
+		}
+	}
+	
+	return bp;
 }
 
 static void place(void *bp, size_t asize)
 {
+	char *newbp;
+	size_t size = GET_SIZE(HDRP(bp));
 	
+	if ((size_t aasize = (size - asize))> 2 * DSIZe) {
+		//newbp = mem_sbrk(aasize);
+		PUT(HDRP(bp), PACK(asize, 1));
+		PUT(FTRP(bp), PACK(asize, 1));
+		newbp = NEXT_BLKP(bp);
+		PUT(HDRP(newbp), PACK(aasize, 0));
+		PUT(FTRP(nwebp), PACK(aasize, 0));
+	} ele {
+		PUT(HDRP(bp), PACK(size), 1);
+		PUT(FTRP(bp), PACK(size), 1);
+	}
 }
