@@ -30,6 +30,7 @@
 #define HDRLINES       4 /* number of header lines in a trace file */
 #define LINENUM(i) (i+5) /* cnvt trace request nums to linenums (origin 1) */
 
+
 /* Returns true if p is ALIGNMENT-byte aligned */
 #define IS_ALIGNED(p)  ((((unsigned int)(p)) % ALIGNMENT) == 0)
 
@@ -169,6 +170,7 @@ int main(int argc, char **argv)
 		unix_error("ERROR: realloc failed in main");
 	    strcpy(tracedir, "./"); 
             tracefiles[0] = strdup(optarg);
+			printf("tracefiles[0]=%s\n", tracefiles[0]);
             tracefiles[1] = NULL;
             break;
 	case 't': /* Directory where the traces are located */
@@ -413,6 +415,7 @@ static int add_range(range_t **ranges, char *lo, int size,
 	    malloc_error(tracenum, opnum, msg);
 	    return 0;
         }
+		printf("\np lo: %p; p hi: %p\n", p->lo, p->hi);
     }
 
     /* 
@@ -930,6 +933,7 @@ static void printresults(int n, stats_t *stats)
 	   "trace", " valid", "util", "ops", "secs", "Kops");
     for (i=0; i < n; i++) {
 	if (stats[i].valid) {
+		printf("%0.7f\n", stats[i].secs);
 	    printf("%2d%10s%5.0f%%%8.0f%10.6f%6.0f\n", 
 		   i,
 		   "yes",
@@ -950,7 +954,7 @@ static void printresults(int n, stats_t *stats)
 		   "-",
 		   "-");
 	}
-    }
+    } 
 
     /* Print the aggregate results for the set of traces */
     if (errors == 0) {

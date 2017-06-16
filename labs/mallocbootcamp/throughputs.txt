@@ -8,5 +8,4 @@ Intel(R)Xeon(R)CPUE5-2690v2@3.00GHz:checkpoint:14684
 Intel(R)Xeon(R)CPUE5-2690v2@3.00GHz:regular:18575
 Intel(R)Xeon(R)CPUE5645@2.40GHz:regular:13676
 Intel(R)Xeon(R)CPUE5645@2.40GHz:checkpoint:13497
-Intel(R)Core(TM)i5-2500CPU@3.30GHz:regular:13676
-Intel(R)Core(TM)i5-2500CPU@3.30GHz:checkpoint:13497
+

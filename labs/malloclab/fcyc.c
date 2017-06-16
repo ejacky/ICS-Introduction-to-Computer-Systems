@@ -44,6 +44,8 @@ static int samplecount = 0;
 static double *samples = NULL;
 #endif
 
+#define DEBUG
+
 /* 
  * init_sampler - Start new sampling process 
  */
