@@ -45,12 +45,35 @@ void transpose_submit(int M, int N, int A[N][M], int B[M][N])
                 }
             }
     } else if (M == 64) {
+        for (row_b = 0; row_b < N; row_b += 4)
+            for (col_b = 0; col_b < M; col_b += 8) {
+                for (i = row_b; i < row_b + 4; i++) {
+                    for (j = col_b; j < col_b + 8; j++) {
+                        if (i != j) 
+                            B[j][i] = A[i][j];
+                        else {
+                            //printf("i = %d, j = %d ;A[i][j]= %d", i,j, A[i][j]);
+                            tmp = A[i][j];
+                            index = i;
+                        }
+                    }
+                    if (col_b == row_b) {
+                        B[index][index] = tmp;
+                        //printf("index = %d; B[index][index]=%d", index, B[index][index]);
+                    }
+                }
+            }
 
     } else if (M == 61) {
-
+        for (row_b = 0; row_b < N; row_b += 17)
+            for (col_b = 0; col_b < M; col_b += 17) {
+                for (j = col_b; j < col_b + 17 && j < M; ++j)
+                    for (i = row_b; i < row_b + 17 && i < N; ++i) {
+                        tmp = A[j][i];
+                        B[i][j] = tmp;
+                    }
+            }   
     }
-
-
 }
 
 /* 
