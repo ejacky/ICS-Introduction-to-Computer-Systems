@@ -26,8 +26,11 @@ void sum()
 int main(int argc, char **argv)
 {
 
-	long int i = 119;
-	long int j = 120;
+//	char *i = "a";
+//	char *j = "b";
+	 int i = 123;
+	 int j = 455;
+
 	
 	printf("i addr = %p\n", &i);
 	printf("j addr = %p\n", &j);
