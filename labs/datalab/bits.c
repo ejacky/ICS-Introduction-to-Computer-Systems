@@ -140,7 +140,7 @@ NOTES:
  */
 int bitAnd(int x, int y) {
 
-  return (x | y);
+  return ~((~x)|(~y));
 }
 /* 
  * getByte - Extract byte n from word x
@@ -151,14 +151,9 @@ int bitAnd(int x, int y) {
  *   Rating: 2
  */
 int getByte(int x, int n) {
-
-
-
-
-
-
-
-  return 2;
+  	n = (n << 3);
+	x = (x >> n) & 0xff; // 取最后一个字节 & 0xff
+  	return x;
 
 }
 /* 
@@ -170,7 +165,8 @@ int getByte(int x, int n) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-  return 2;
+  int t = 1 << (31 ^ n);
+  return ((x >> n) + t) ^ t;
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -180,7 +176,25 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  return 2;
+    int t = 0x55 + (0x55<<8);
+    int mask = t + (t<<16);
+    x = (x&mask) + ((x>>1)&mask);
+    
+    t = 0x33 + (0x33<<8);
+    mask = t + (t<<16);
+    x = (x&mask) + ((x>>2)&mask);
+    
+    t = 0xf + (0xf<<8);
+    mask = t + (t<<16);
+    x = (x&mask) + ((x>>4)&mask);
+    
+    mask = 0xff + (0xff<<16);
+    x = (x&mask) + ((x>>8)&mask);
+    
+    mask = 0xff + (0xff<<8);
+    x = (x&mask) + ((x>>16)&mask);
+    
+    return x;
 }
 /* 
  * bang - Compute !x without using !
