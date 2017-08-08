@@ -237,7 +237,9 @@ int fitsBits(int x, int n) {
  *   Rating: 2
  */
 int divpwr2(int x, int n) {
-    return 2;
+	int signofx = x >> 31;
+	int mask = (1 << n) + (~0);
+	return ((signofx & mask) + x) >> n;
 }
 /* 
  * negate - return -x 
@@ -247,7 +249,7 @@ int divpwr2(int x, int n) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 /* 
  * isPositive - return 1 if x > 0, return 0 otherwise 
@@ -257,7 +259,7 @@ int negate(int x) {
  *   Rating: 3
  */
 int isPositive(int x) {
-  return 2;
+	return !(!(x & (~(x >> 31))));
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -267,7 +269,19 @@ int isPositive(int x) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+   int negX = ~x+1;
+   int addY = negX + y; /*negative if x > y*/
+   int checkSign = addY >> 31 & 1; /*shifts sign bit to the right*/
+
+   /*the above will not work for values that push the bounds of ints
+     the following code checks very large/small values*/
+   int leftBit = 1 << 31;
+   int xLeft = leftBit & x;
+   int yLeft = leftBit & y;
+   int xOrd = xLeft ^ yLeft;
+   xOrd = (xOrd >> 31) & 1;
+ 
+   return (xOrd & (xLeft>>31)) | (!checkSign & !xOrd);
 }
 /*
  * ilog2 - return floor(log base 2 of x), where x > 0
@@ -277,7 +291,14 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4
  */
 int ilog2(int x) {
-  return 2;
+  int result = 0;
+  result = (!!(x >> 16)) << 4; // if > 16? 
+  // based on previous result, if > (result + 8)
+  result = result + ((!!(x >> (result + 8))) << 3);
+  result = result + ((!!(x >> (result + 4))) << 2);
+  result = result + ((!!(x >> (result + 2))) << 1);
+  result = result + (!!(x >> (result + 1)));
+  return result;
 }
 /* 
  * float_neg - Return bit-level equivalent of expression -f for
@@ -291,7 +312,15 @@ int ilog2(int x) {
  *   Rating: 2
  */
 unsigned float_neg(unsigned uf) {
- return 2;
+   int nanCheck = 0x000000FF << 23; /*1's in the 8 exponent bits*/
+   int frac = 0x7FFFFF & uf; /*contains just the fraction value*/
+
+   /*return argument if exp bits are all 1's and frac is not zero*/
+   if((nanCheck & uf) == nanCheck && frac)
+      return uf;
+
+   /*otherwise, just flip the sign bit*/
+   return uf ^ (1 << 31);
 }
 /* 
  * float_i2f - Return bit-level equivalent of expression (float) x
@@ -303,7 +332,26 @@ unsigned float_neg(unsigned uf) {
  *   Rating: 4
  */
 unsigned float_i2f(int x) {
-  return 2;
+  unsigned s = 0, exp = 31, frac = 0, toAdd = 0;
+  if (x == 0x00000000u) return 0x00000000u;
+  if (x & 0x80000000u) { s = 0x80000000u; x = -x; }
+  while (1) {
+    if (x & 0x80000000u) break;
+    exp -= 1;
+    x <<= 1;
+  }
+  if ((x & 0x000001ff) == 0x180) toAdd = 1;
+  else if ((x & 0xff) > 0x80) toAdd = 1;
+  /* + toAdd may lead to a carry
+   * if this happens, we need to 
+   *    frac >>= 1
+   *    exp += 1 
+   * However, since we supress the leading 1 of frac,
+   * the carry can be automatically added to exp.
+   */
+  frac = ((x & 0x7fffffffu) >> 8) + toAdd;
+  
+  return s + ((exp + 127) << 23) + frac;
 }
 /* 
  * float_twice - Return bit-level equivalent of expression 2*f for
@@ -317,5 +365,16 @@ unsigned float_i2f(int x) {
  *   Rating: 4
  */
 unsigned float_twice(unsigned uf) {
-  return 2;
+     unsigned f=uf;  
+        /* Computer 2*f. If f is a NaN, then return f. */  
+    if ((f & 0x7F800000) == 0){  
+        //shift one bit to left  
+                f = ((f & 0x007FFFFF)<<1) | (0x80000000 & f);  
+    }  
+    else if ((f & 0x7F800000) != 0x7F800000){  
+        /* Float has a special exponent. */  
+        /* Increment exponent, effectively multiplying by 2. */  
+        f =f+0x00800000;  
+        }  
+    return f;  
 }
