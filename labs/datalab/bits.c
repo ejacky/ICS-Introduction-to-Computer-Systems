@@ -376,5 +376,5 @@ unsigned float_twice(unsigned uf) {
         /* Increment exponent, effectively multiplying by 2. */  
         f =f+0x00800000;  
         }  
-    return f;  
+    return f;   
 }
