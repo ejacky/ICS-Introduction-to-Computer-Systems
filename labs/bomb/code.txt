@@ -904,7 +904,7 @@ Disassembly of section .text:
   4015f5:	bf 70 38 60 00       	mov    $0x603870,%edi
   4015fa:	e8 f1 f5 ff ff       	callq  400bf0 <__isoc99_sscanf@plt>
   4015ff:	83 f8 03             	cmp    $0x3,%eax
-  401602:	75 31                	jne    401635 <phase_defused+0x71>
+  401602:	75 31                	jne    401635 < +0x71>
   401604:	be 22 26 40 00       	mov    $0x402622,%esi
   401609:	48 8d 7c 24 10       	lea    0x10(%rsp),%rdi
   40160e:	e8 25 fd ff ff       	callq  401338 <strings_not_equal>
