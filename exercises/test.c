@@ -3,12 +3,9 @@
 
 int main(int argc, char **argv)
 {
-	int i = 2;
-	
-	if (i > 0) {
-		return 1;
-	}
-	
+	int local;
+	printf("local at %p\n", &local);
+		
 	return 0;
 }
 
